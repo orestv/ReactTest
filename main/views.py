@@ -1,10 +1,7 @@
-from httplib import HTTPResponse
 from django.http import JsonResponse
 
 # Create your views here.
 import django.views.generic.base as django_base_views
-from django.views.decorators.csrf import csrf_exempt
-from django.views.generic.list import BaseListView, ListView
 from main.models import Comment
 
 
@@ -38,7 +35,6 @@ class Home(django_base_views.TemplateView):
 
 class CommentsView(django_base_views.View):
 
-    @csrf_exempt
     def dispatch(self, request, *args, **kwargs):
         return super(CommentsView, self).dispatch(request, *args, **kwargs)
 
@@ -54,7 +50,9 @@ class CommentsView(django_base_views.View):
 
         comment_list = self.get_comment_list()
 
-        return JsonResponse(comment_list, safe=False)
+        response_dict = {'comments': comment_list}
+
+        return JsonResponse(response_dict, safe=False)
 
     def post(self, request, *args, **kwargs):
 
@@ -67,4 +65,6 @@ class CommentsView(django_base_views.View):
         comment.save()
 
         comment_list = self.get_comment_list()
-        return JsonResponse(comment_list, safe=False)
+        response_dict = {'comments': comment_list}
+
+        return JsonResponse(response_dict, safe=False)

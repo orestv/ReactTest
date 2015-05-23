@@ -1,25 +1,23 @@
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie != '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
 $.ajaxSetup({
-     beforeSend: function(xhr, settings) {
-         function getCookie(name) {
-             var cookieValue = null;
-             if (document.cookie && document.cookie != '') {
-                 var cookies = document.cookie.split(';');
-                 for (var i = 0; i < cookies.length; i++) {
-                     var cookie = jQuery.trim(cookies[i]);
-                     // Does this cookie string begin with the name we want?
-                 if (cookie.substring(0, name.length + 1) == (name + '=')) {
-                     cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                     break;
-                 }
-             }
-         }
-         return cookieValue;
-         }
-         if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
-             // Only send the token to relative URLs i.e. locally.
-             xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
-         }
-     }
+    headers: {
+        'X-CSRFToken': getCookie('csrftoken')
+    }
 });
 
 var CommentBox = React.createClass({
@@ -89,7 +87,7 @@ function flattenComments(comments, currentDepth) {
 
 var CommentList = React.createClass({
     render: function() {
-        var commentList = flattenComments(this.props.data, 0);
+        var commentList = flattenComments(this.props.data.comments, 0);
 
         var self = this;
 
@@ -160,12 +158,14 @@ var Comment = React.createClass({
                 </h2>
 
                 {this.state.showReplyForm
-                    ? <CommentForm parentCommentId={this.props.id}
-                                   submittedCallback={this.handleCommentSubmit}
-                      />
-                    : null}
+                    ?
+                    <CommentForm parentCommentId={this.props.id}
+                                 submittedCallback={this.handleCommentSubmit}
+                        />
+                    :
+                    <button onClick={this.replyClicked}>Reply</button>}
 
-                <button onClick={this.replyClicked}>Reply</button>
+
                 <span dangerouslySetInnerHTML={{__html: rawMarkup}} />
             </div>
         )
