@@ -85,13 +85,12 @@ var CommentForm = React.createClass({
         var parentCommentId = React.findDOMNode(this.refs.parentCommentId).value.trim();
         if (!text || !author)
             return;
-        console.log(text);
-        console.log(parentCommentId);
 
         React.findDOMNode(this.refs.author).value = "";
+        if (this.props.submittedCallback)
+            this.props.submittedCallback();
     },
     render: function() {
-        console.log(this.props);
         return (
             <form className="commentForm" onSubmit={this.handleSubmit}>
                 <input type="hidden" ref="parentCommentId" value={this.props.parentCommentId}/>
@@ -107,6 +106,9 @@ var Comment = React.createClass({
     getInitialState: function() {
         return {showReplyForm: false};
     },
+    replySubmitted: function() {
+        this.setState({showReplyForm: false});
+    },
     replyClicked: function() {
         this.setState({showReplyForm: true});
     },
@@ -118,7 +120,9 @@ var Comment = React.createClass({
                     {this.props.author}
                 </h2>
 
-                {this.state.showReplyForm ? <CommentForm parentCommentId={this.props.id}/> : null}
+                {this.state.showReplyForm
+                    ? <CommentForm parentCommentId={this.props.id} submittedCallback={this.replySubmitted}/>
+                    : null}
 
                 <button onClick={this.replyClicked}>Reply</button>
                 <span dangerouslySetInnerHTML={{__html: rawMarkup}} />
