@@ -12,11 +12,12 @@ class Comment(models.Model):
 
     def as_dict(self):
         result = {
+            'id': self.pk,
             'text': self.text,
             'author': self.author,
         }
         if self.children.exists():
-            result['children'] = {
-                child.id: child.as_dict() for child in self.children.all()
-            }
+            result['children'] = [
+                child.as_dict() for child in self.children.all()
+            ]
         return result

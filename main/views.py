@@ -39,9 +39,9 @@ class CommentsView(django_base_views.View):
     def get(self, *args, **kwargs):
 
         first_level_comments = Comment.objects.filter(parent=None)
-        comment_dict = {
-            comment.pk: comment.as_dict()
+        comment_list = [
+            comment.as_dict()
             for comment in first_level_comments
-        }
+        ]
 
-        return JsonResponse(comment_dict, safe=False)
+        return JsonResponse(comment_list, safe=False)
