@@ -1,7 +1,9 @@
 from django.http import JsonResponse
 
 # Create your views here.
-from django.views.generic.base import TemplateView, View
+import django.views.generic.base as django_base_views
+from django.views.generic.list import BaseListView, ListView
+from main.models import Comment
 
 
 class JSONResponseMixin(object):
@@ -28,5 +30,18 @@ class JSONResponseMixin(object):
         return context
 
 
-class Home(TemplateView):
+class Home(django_base_views.TemplateView):
     template_name = 'main/index.html'
+
+
+class CommentsView(django_base_views.View):
+
+    def get(self, *args, **kwargs):
+
+        first_level_comments = Comment.objects.filter(parent=None)
+        comment_dict = {
+            comment.pk: comment.as_dict()
+            for comment in first_level_comments
+        }
+
+        return JsonResponse(comment_dict, safe=False)
