@@ -33,7 +33,6 @@ var CommentBox = React.createClass({
             <div className="commentBox">
                 <h1>Comments</h1>
                 <CommentList data={this.state.data}/>
-                <CommentForm />
             </div>
         );
     }
@@ -43,9 +42,9 @@ function flattenComments(comments, currentDepth) {
     var commentList = [];
 
     for (var commentIndex in comments) {
-        var comment = comments[commentIndex];
         if (!comments.hasOwnProperty(commentIndex))
             continue;
+        var comment = comments[commentIndex];
 
         comment.depth = currentDepth;
         commentList.push(comment);
@@ -81,14 +80,22 @@ var CommentList = React.createClass({
 var CommentForm = React.createClass({
     render: function() {
         return (
-            <div className="commentForm">
-                Hello World! I'm a CommentForm!
-            </div>
+            <form className="commentForm">
+                <input type="text" placeholder="Your name"/>
+                <input type="text" placeholder="Enter your comment"/>
+                <input type="submit" value="Post"/>
+            </form>
         );
     }
 });
 
 var Comment = React.createClass({
+    getInitialState: function() {
+        return {showReplyForm: false};
+    },
+    replyClicked: function() {
+        this.setState({showReplyForm: true});
+    },
     render: function() {
         var rawMarkup = marked(this.props.children.toString(), {sanitize: true});
         return (
@@ -96,6 +103,10 @@ var Comment = React.createClass({
                 <h2 className="commentAuthor">
                     {this.props.author}
                 </h2>
+
+                {this.state.showReplyForm ? <CommentForm/> : null}
+
+                <button onClick={this.replyClicked}>Reply</button>
                 <span dangerouslySetInnerHTML={{__html: rawMarkup}} />
             </div>
         )
