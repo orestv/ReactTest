@@ -39,11 +39,33 @@ var CommentBox = React.createClass({
     }
 });
 
+function flattenComments(comments, currentDepth) {
+    var commentList = [];
+
+    for (var commentIndex in comments) {
+        var comment = comments[commentIndex];
+        if (!comments.hasOwnProperty(commentIndex))
+            continue;
+
+        comment.depth = currentDepth;
+        commentList.push(comment);
+
+        if ('children' in comment) {
+            var flattenedChildren = flattenComments(comment.children, currentDepth + 1);
+            commentList = commentList.concat(flattenedChildren);
+        }
+    }
+
+    return commentList
+}
+
 var CommentList = React.createClass({
     render: function() {
-        var commentNodes = this.props.data.map(function(comment){
+        var commentList = flattenComments(this.props.data, 0);
+
+        var commentNodes = commentList.map(function(comment){
             return (
-                <Comment author={comment.author}>
+                <Comment author={comment.author} depth={comment.depth}>
                     {comment.text}
                 </Comment>
             )
@@ -70,7 +92,7 @@ var Comment = React.createClass({
     render: function() {
         var rawMarkup = marked(this.props.children.toString(), {sanitize: true});
         return (
-            <div className="comment">
+            <div className="comment" data-depth={this.props.depth}>
                 <h2 className="commentAuthor">
                     {this.props.author}
                 </h2>

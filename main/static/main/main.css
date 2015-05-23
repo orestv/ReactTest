@@ -1,0 +1,28 @@
+div#content {
+    border: 1px solid black;
+    width: 15cm;
+}
+
+div.comment {
+    border: 1px solid red;
+    margin-right: 0;
+}
+
+div.comment[data-depth="0"] {
+    width: 100%;
+}
+
+div.comment[data-depth="1"]{
+    width: 95%;
+    margin-left: 5%;
+}
+
+div.comment[data-depth="2"]{
+    width: 90%;
+    margin-left: 10%;
+}
+
+div.comment[data-depth="3"]{
+    width: 85%;
+    margin-left: 15%;
+}
