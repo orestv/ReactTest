@@ -64,7 +64,7 @@ var CommentList = React.createClass({
 
         var commentNodes = commentList.map(function(comment){
             return (
-                <Comment author={comment.author} depth={comment.depth}>
+                <Comment author={comment.author} depth={comment.depth} id={comment.id}>
                     {comment.text}
                 </Comment>
             )
@@ -78,11 +78,25 @@ var CommentList = React.createClass({
 });
 
 var CommentForm = React.createClass({
+    handleSubmit: function(e) {
+        e.preventDefault();
+        var author = React.findDOMNode(this.refs.author).value.trim();
+        var text = React.findDOMNode(this.refs.text).value.trim();
+        var parentCommentId = React.findDOMNode(this.refs.parentCommentId).value.trim();
+        if (!text || !author)
+            return;
+        console.log(text);
+        console.log(parentCommentId);
+
+        React.findDOMNode(this.refs.author).value = "";
+    },
     render: function() {
+        console.log(this.props);
         return (
-            <form className="commentForm">
-                <input type="text" placeholder="Your name"/>
-                <input type="text" placeholder="Enter your comment"/>
+            <form className="commentForm" onSubmit={this.handleSubmit}>
+                <input type="hidden" ref="parentCommentId" value={this.props.parentCommentId}/>
+                <input type="text" placeholder="Your name" ref="author"/>
+                <input type="text" placeholder="Enter your comment" ref="text"/>
                 <input type="submit" value="Post"/>
             </form>
         );
@@ -104,7 +118,7 @@ var Comment = React.createClass({
                     {this.props.author}
                 </h2>
 
-                {this.state.showReplyForm ? <CommentForm/> : null}
+                {this.state.showReplyForm ? <CommentForm parentCommentId={this.props.id}/> : null}
 
                 <button onClick={this.replyClicked}>Reply</button>
                 <span dangerouslySetInnerHTML={{__html: rawMarkup}} />
