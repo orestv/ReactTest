@@ -1,11 +1,26 @@
-var data = [
-    {
-        'author': 'Orest Voloschuk', 'text': 'Comment1'
-    },
-    {
-        'author': 'Andrii Glovatskyi', 'text': 'Comment 1'
-    }
-];
+$.ajaxSetup({
+     beforeSend: function(xhr, settings) {
+         function getCookie(name) {
+             var cookieValue = null;
+             if (document.cookie && document.cookie != '') {
+                 var cookies = document.cookie.split(';');
+                 for (var i = 0; i < cookies.length; i++) {
+                     var cookie = jQuery.trim(cookies[i]);
+                     // Does this cookie string begin with the name we want?
+                 if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                     cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                     break;
+                 }
+             }
+         }
+         return cookieValue;
+         }
+         if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
+             // Only send the token to relative URLs i.e. locally.
+             xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
+         }
+     }
+});
 
 var CommentBox = React.createClass({
     getInitialState: function() {
@@ -14,6 +29,20 @@ var CommentBox = React.createClass({
     componentDidMount: function() {
         this.loadCommentsFromServer();
         setInterval(this.loadCommentsFromServer, this.props.pollInterval)
+    },
+    handleCommentSubmit: function(comment) {
+        $.ajax({
+            url: this.props.url,
+            dataType: 'json',
+            type: 'POST',
+            data: comment,
+            success: function(data) {
+                this.setState(data);
+            }.bind(this),
+            error: function (xhr, status, err) {
+                console.error(this.props.url, status, err.toString());
+            }.bind(this)
+        });
     },
     loadCommentsFromServer: function() {
         $.ajax({
@@ -32,7 +61,7 @@ var CommentBox = React.createClass({
         return (
             <div className="commentBox">
                 <h1>Comments</h1>
-                <CommentList data={this.state.data}/>
+                <CommentList data={this.state.data} handleCommentSubmit={this.handleCommentSubmit}/>
             </div>
         );
     }
@@ -62,9 +91,15 @@ var CommentList = React.createClass({
     render: function() {
         var commentList = flattenComments(this.props.data, 0);
 
+        var self = this;
+
         var commentNodes = commentList.map(function(comment){
             return (
-                <Comment author={comment.author} depth={comment.depth} id={comment.id}>
+                <Comment author={comment.author}
+                         depth={comment.depth}
+                         id={comment.id}
+                         handleCommentSubmit={self.props.handleCommentSubmit}
+                    >
                     {comment.text}
                 </Comment>
             )
@@ -86,9 +121,12 @@ var CommentForm = React.createClass({
         if (!text || !author)
             return;
 
-        React.findDOMNode(this.refs.author).value = "";
         if (this.props.submittedCallback)
-            this.props.submittedCallback();
+            this.props.submittedCallback({
+                'author': author,
+                'text': text,
+                'parentCommentId': parentCommentId
+            });
     },
     render: function() {
         return (
@@ -106,11 +144,12 @@ var Comment = React.createClass({
     getInitialState: function() {
         return {showReplyForm: false};
     },
-    replySubmitted: function() {
-        this.setState({showReplyForm: false});
-    },
     replyClicked: function() {
         this.setState({showReplyForm: true});
+    },
+    handleCommentSubmit: function(comment) {
+        this.setState({showReplyForm: false});
+        this.props.handleCommentSubmit(comment);
     },
     render: function() {
         var rawMarkup = marked(this.props.children.toString(), {sanitize: true});
@@ -121,7 +160,9 @@ var Comment = React.createClass({
                 </h2>
 
                 {this.state.showReplyForm
-                    ? <CommentForm parentCommentId={this.props.id} submittedCallback={this.replySubmitted}/>
+                    ? <CommentForm parentCommentId={this.props.id}
+                                   submittedCallback={this.handleCommentSubmit}
+                      />
                     : null}
 
                 <button onClick={this.replyClicked}>Reply</button>
