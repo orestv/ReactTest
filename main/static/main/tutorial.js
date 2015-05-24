@@ -75,9 +75,7 @@ var CommentList = React.createClass({
 
         var commentNodes = commentList.map(function(comment){
             return (
-                <Comment author={comment.author}
-                         depth={comment.depth}
-                         id={comment.id}
+                <Comment comment={comment}
                          handleCommentSubmit={self.props.handleCommentSubmit}
                     >
                     {comment.text}
@@ -115,9 +113,13 @@ var CommentForm = React.createClass({
         return (
             <form className="commentForm" onSubmit={this.handleSubmit}>
                 <input type="hidden" ref="parent" value={this.props.parent}/>
-                <input type="text" placeholder="Your name" ref="author"/>
-                <input type="text" placeholder="Enter your comment" ref="text"/>
-                <input type="submit" value="Post"/>
+                <div className="form-group">
+                    <input type="text" placeholder="Your name" ref="author"/>
+                </div>
+                <div className="form-group">
+                    <input type="text" placeholder="Enter your comment" ref="text"/>
+                </div>
+                <button className="btn">Post</button>
             </form>
         );
     }
@@ -135,23 +137,33 @@ var Comment = React.createClass({
         this.props.handleCommentSubmit(comment);
     },
     render: function() {
+        var comment = this.props.comment;
         var rawMarkup = marked(this.props.children.toString(), {sanitize: true});
         return (
-            <div className="comment" data-depth={this.props.depth}>
-                <h2 className="commentAuthor">
-                    {this.props.author}
-                </h2>
-
-                {this.state.showReplyForm
-                    ?
-                    <CommentForm parent={this.props.id}
-                                 submittedCallback={this.handleCommentSubmit}
-                        />
-                    :
-                    <button onClick={this.replyClicked}>Reply</button>}
-
-
-                <span dangerouslySetInnerHTML={{__html: rawMarkup}} />
+            <div className="comment container-fluid" data-depth={comment.depth}>
+                <div className="row">
+                    <div className="col-md-1">
+                        <small>{comment.author} on {comment.date}</small>
+                    </div>
+                </div>
+                <div className="row">
+                    <div className="col-md-1">
+                        <span dangerouslySetInnerHTML={{__html: rawMarkup}} />
+                    </div>
+                </div>
+                <div className="row">
+                    <div className="col-md-1">
+                        {this.state.showReplyForm
+                            ?
+                            <CommentForm parent={comment.id}
+                                         submittedCallback={this.handleCommentSubmit}
+                                />
+                            :
+                            <button className="glyphicon glyphicon-pencil" onClick={this.replyClicked}/>
+                        }
+                    </div>
+                </div>
+                <hr/>
             </div>
         )
     }

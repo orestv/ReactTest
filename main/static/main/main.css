@@ -1,12 +1,7 @@
-div#content {
-    border: 1px solid black;
-    width: 15cm;
-}
-
-div.comment {
-    border: 1px solid red;
-    margin-right: 0;
-}
+/*div.comment {*/
+    /*border: 1px solid red;*/
+    /*margin-right: 0;*/
+/*}*/
 
 div.comment[data-depth="0"] {
     width: 100%;
