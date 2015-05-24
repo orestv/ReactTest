@@ -30,6 +30,7 @@ var CommentBox = React.createClass({
     },
     handleCommentSubmit: function(comment) {
         $.ajax({
+            //url: 'comments.json',
             url: this.props.url,
             dataType: 'json',
             type: 'POST',
@@ -177,6 +178,6 @@ var Comment = React.createClass({
 });
 
 React.render(
-    <CommentBox url="/main/comments.json" pollInterval={1000} />,
+    <CommentBox url="http://localhost:8888/comments.json" pollInterval={1000} />,
     document.getElementById('content')
 );

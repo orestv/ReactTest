@@ -2,6 +2,7 @@ from django.http import JsonResponse
 
 # Create your views here.
 import django.views.generic.base as django_base_views
+from main.forms import CommentForm
 from main.models import Comment
 
 
@@ -60,12 +61,12 @@ class CommentsView(django_base_views.View):
         text = request.POST['text']
         parent_id = request.POST.get('parentCommentId', None)
 
-        if parent_id:
-            parent = Comment.objects.get(pk=parent_id)
-        else:
-            parent = None
+        form = CommentForm({'author': author, 'text': text, 'parent': parent_id})
+        form.is_valid()     # TODO: raise exception if invalid
 
-        comment = Comment(author=author, text=text, parent=parent)
+        comment_data = form.clean()
+
+        comment = Comment(**comment_data)
         comment.save()
 
         comment_list = self.get_comment_list()
