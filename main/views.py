@@ -58,9 +58,13 @@ class CommentsView(django_base_views.View):
 
         author = request.POST['author']
         text = request.POST['text']
-        parent_id = request.POST['parentCommentId']
+        parent_id = request.POST.get('parentCommentId', None)
 
-        parent = Comment.objects.get(pk=parent_id)
+        if parent_id:
+            parent = Comment.objects.get(pk=parent_id)
+        else:
+            parent = None
+
         comment = Comment(author=author, text=text, parent=parent)
         comment.save()
 
