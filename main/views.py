@@ -59,7 +59,7 @@ class CommentsView(django_base_views.View):
 
         author = request.POST['author']
         text = request.POST['text']
-        parent_id = request.POST.get('parentCommentId', None)
+        parent_id = request.POST.get('parent', None)
 
         form = CommentForm({'author': author, 'text': text, 'parent': parent_id})
         form.is_valid()     # TODO: raise exception if invalid

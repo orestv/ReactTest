@@ -25,43 +25,23 @@ var CommentBox = React.createClass({
         return {data: []};
     },
     componentDidMount: function() {
-        this.loadCommentsFromServer();
-        setInterval(this.loadCommentsFromServer, this.props.pollInterval)
+        var self = this;
+        this.ws = new WebSocket("ws://localhost:8888/comments.ws");
+
+        this.ws.onmessage = function(evt) {
+            var data_json = JSON.parse(evt.data);
+            self.setState(data_json);
+        }
     },
     handleCommentSubmit: function(comment) {
-        $.ajax({
-            //url: 'comments.json',
-            url: this.props.url,
-            dataType: 'json',
-            type: 'POST',
-            data: comment,
-            success: function(data) {
-                this.setState(data);
-            }.bind(this),
-            error: function (xhr, status, err) {
-                console.error(this.props.url, status, err.toString());
-            }.bind(this)
-        });
-    },
-    loadCommentsFromServer: function() {
-        $.ajax({
-            url: this.props.url,
-            dataType: 'json',
-            cache: false,
-            success: function(data) {
-                this.setState({data: data});
-            }.bind(this),
-            error: function(xhr, status, err) {
-                console.error(this.props.url, status, err.toString())
-            }.bind(this)
-        });
+        this.ws.send(JSON.stringify(comment));
     },
     render: function() {
         return (
             <div className="commentBox">
                 <CommentForm submittedCallback={this.handleCommentSubmit} />
                 <h1>Comments</h1>
-                <CommentList data={this.state.data} handleCommentSubmit={this.handleCommentSubmit}/>
+                <CommentList data={this.state.comments} handleCommentSubmit={this.handleCommentSubmit}/>
             </div>
         );
     }
@@ -89,7 +69,7 @@ function flattenComments(comments, currentDepth) {
 
 var CommentList = React.createClass({
     render: function() {
-        var commentList = flattenComments(this.props.data.comments, 0);
+        var commentList = flattenComments(this.props.data, 0);
 
         var self = this;
 
@@ -117,7 +97,7 @@ var CommentForm = React.createClass({
         e.preventDefault();
         var author = React.findDOMNode(this.refs.author).value.trim();
         var text = React.findDOMNode(this.refs.text).value.trim();
-        var parentCommentId = React.findDOMNode(this.refs.parentCommentId).value.trim();
+        var parent = React.findDOMNode(this.refs.parent).value.trim();
         if (!text || !author)
             return;
 
@@ -125,7 +105,7 @@ var CommentForm = React.createClass({
             this.props.submittedCallback({
                 'author': author,
                 'text': text,
-                'parentCommentId': parentCommentId
+                'parent': parent
             });
 
         React.findDOMNode(this.refs.author).value = "";
@@ -134,7 +114,7 @@ var CommentForm = React.createClass({
     render: function() {
         return (
             <form className="commentForm" onSubmit={this.handleSubmit}>
-                <input type="hidden" ref="parentCommentId" value={this.props.parentCommentId}/>
+                <input type="hidden" ref="parent" value={this.props.parent}/>
                 <input type="text" placeholder="Your name" ref="author"/>
                 <input type="text" placeholder="Enter your comment" ref="text"/>
                 <input type="submit" value="Post"/>
@@ -164,7 +144,7 @@ var Comment = React.createClass({
 
                 {this.state.showReplyForm
                     ?
-                    <CommentForm parentCommentId={this.props.id}
+                    <CommentForm parent={this.props.id}
                                  submittedCallback={this.handleCommentSubmit}
                         />
                     :
