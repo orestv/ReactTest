@@ -8,7 +8,9 @@ class Comment(models.Model):
     text = models.CharField(max_length=2**10 * 50, null=False)
     author = models.CharField(max_length=512, null=True)
     parent = models.ForeignKey(to='Comment', related_name='children',
-                                  default=None, null=True)
+                               default=None,
+                               null=True,
+                               blank=True)
 
     def as_dict(self):
         result = {
