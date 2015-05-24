@@ -25,7 +25,9 @@ SECRET_KEY = 'zgp5851!x*em(1)ge52zo(g-5zf66ha+rz_0hpjs(r!%%r%hf7'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'localhost',
+]
 
 
 # Application definition
