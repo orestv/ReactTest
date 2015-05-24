@@ -1,6 +1,7 @@
 import json
 import os
 from configparser import ConfigParser
+from tornado.websocket import WebSocketHandler
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'react.settings'
 
@@ -76,10 +77,48 @@ class CommentsHandler(RequestHandler):
         self.write(comment_json)
 
 
+class CommentsHandlerWS(WebSocketHandler):
+    waiters = set()
+
+    @classmethod
+    def generate_comment_json(cls):
+        response_dict = {'comments': get_comment_list()}
+        comment_json = json.dumps(response_dict)
+        return comment_json
+
+    def open(self, *args, **kwargs):
+        self.write_message(self.generate_comment_json())
+        CommentsHandlerWS.waiters.add(self)
+
+    def on_close(self):
+        CommentsHandlerWS.waiters.remove(self)
+
+    @classmethod
+    def update_waiters(cls):
+        for waiter in cls.waiters:
+            waiter.write_message(cls.generate_comment_json())
+
+    def on_message(self, message):
+        comment_json = json.loads(message)
+
+        form = CommentForm(data=comment_json)
+        form.is_valid()     # TODO: raise exception if not valid
+
+        comment = Comment(**form.clean())
+        comment.save()
+
+        # self.write_message(self.generate_comment_json())
+        self.update_waiters()
+
+    def check_origin(self, origin):
+        return True
+
+
 def make_app():
     return Application([
         url(r'/',  HelloHandler),
         url(r'/comments.json', CommentsHandler),
+        url(r'/comments.ws', CommentsHandlerWS),
     ],
     debug=True)
 
