@@ -17,6 +17,7 @@ class Comment(models.Model):
             'id': self.pk,
             'text': self.text,
             'author': self.author,
+            'date': self.created_date,
         }
         if self.children.exists():
             result['children'] = [

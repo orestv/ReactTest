@@ -8,6 +8,8 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'react.settings'
 import django
 django.setup()
 
+from django.core.serializers.json import DjangoJSONEncoder
+
 from tornado.ioloop import IOLoop
 from tornado.web import RequestHandler, Application, url
 
@@ -49,7 +51,8 @@ class CommentsHandler(RequestHandler):
 
     def get(self):
         response_dict = {'comments': get_comment_list()}
-        comment_json = json.dumps(response_dict)
+        comment_json = json.dumps(response_dict,
+                                  cls=DjangoJSONEncoder)
         self.write(comment_json)
 
     def post(self, *args, **kwargs):
@@ -68,12 +71,14 @@ class CommentsHandler(RequestHandler):
         comment.save()
 
         response_dict = {'comments': get_comment_list()}
-        comment_json = json.dumps(response_dict)
+        comment_json = json.dumps(response_dict,
+                                  cls=DjangoJSONEncoder)
         self.write(comment_json)
 
     def options(self, *args, **kwargs):
         response_dict = {'comments': get_comment_list()}
-        comment_json = json.dumps(response_dict)
+        comment_json = json.dumps(response_dict,
+                                  cls=DjangoJSONEncoder)
         self.write(comment_json)
 
 
@@ -83,7 +88,8 @@ class CommentsHandlerWS(WebSocketHandler):
     @classmethod
     def generate_comment_json(cls):
         response_dict = {'comments': get_comment_list()}
-        comment_json = json.dumps(response_dict)
+        comment_json = json.dumps(response_dict,
+                                  cls=DjangoJSONEncoder)
         return comment_json
 
     def open(self, *args, **kwargs):
@@ -91,7 +97,10 @@ class CommentsHandlerWS(WebSocketHandler):
         CommentsHandlerWS.waiters.add(self)
 
     def on_close(self):
-        CommentsHandlerWS.waiters.remove(self)
+        try:
+            CommentsHandlerWS.waiters.remove(self)
+        except KeyError:
+            pass
 
     @classmethod
     def update_waiters(cls):
