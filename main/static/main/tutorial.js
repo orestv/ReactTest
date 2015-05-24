@@ -30,7 +30,7 @@ var CommentBox = React.createClass({
     },
     handleCommentSubmit: function(comment) {
         $.ajax({
-            url: this.props.url,
+            url: 'comments.json',
             dataType: 'json',
             type: 'POST',
             data: comment,
@@ -88,7 +88,10 @@ function flattenComments(comments, currentDepth) {
 
 var CommentList = React.createClass({
     render: function() {
+        console.log(this.props.data.comments);
         var commentList = flattenComments(this.props.data.comments, 0);
+
+        console.log(commentList);
 
         var self = this;
 
@@ -177,6 +180,6 @@ var Comment = React.createClass({
 });
 
 React.render(
-    <CommentBox url="/main/comments.json" pollInterval={1000} />,
+    <CommentBox url="http://localhost:8888/comments.json" pollInterval={1000} />,
     document.getElementById('content')
 );
