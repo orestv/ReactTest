@@ -58,6 +58,7 @@ var CommentBox = React.createClass({
     render: function() {
         return (
             <div className="commentBox">
+                <CommentForm submittedCallback={this.handleCommentSubmit} />
                 <h1>Comments</h1>
                 <CommentList data={this.state.data} handleCommentSubmit={this.handleCommentSubmit}/>
             </div>
@@ -125,6 +126,9 @@ var CommentForm = React.createClass({
                 'text': text,
                 'parentCommentId': parentCommentId
             });
+
+        React.findDOMNode(this.refs.author).value = "";
+        React.findDOMNode(this.refs.text).value = "";
     },
     render: function() {
         return (
