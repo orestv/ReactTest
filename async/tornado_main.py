@@ -1,5 +1,6 @@
 import json
 import os
+from configparser import ConfigParser
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'react.settings'
 
@@ -11,6 +12,9 @@ from tornado.web import RequestHandler, Application, url
 
 from main.models import Comment
 from main.forms import CommentForm
+
+
+CONFIG_PATH = 'etc/site.conf'
 
 
 class HelloHandler(RequestHandler):
@@ -36,7 +40,7 @@ def get_comment_list():
 class CommentsHandler(RequestHandler):
 
     def set_default_headers(self):
-        super().set_default_headers()
+        super(CommentsHandler, self).set_default_headers()
 
         self.add_header('Access-Control-Allow-Origin', '*')
         self.add_header('Access-Control-Allow-Headers', 'X-CSRFToken')
@@ -81,8 +85,19 @@ def make_app():
 
 
 def main():
+    config = ConfigParser(defaults={
+        'global': {
+            'hostname': 'localhost',
+        },
+        'tornado': {
+            'port': '8888',
+        }
+    })
+    config.read(CONFIG_PATH)
+
     app = make_app()
-    app.listen(8888)
+    app.listen(int(config['tornado']['port']))
+
     IOLoop.current().start()
 
 
